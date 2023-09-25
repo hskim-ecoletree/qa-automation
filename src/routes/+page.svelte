@@ -40,7 +40,7 @@
         <fieldset>
             <label>
                 Homepage URL:
-                <input name="url" type="text" maxlength="255" bind:value={url}>
+                <input name="url" type="text" class="w-96" maxlength="255" bind:value={url}>
             </label>
         </fieldset>
         <button class="btn btn-primary" type="submit">Analysis</button>
@@ -55,16 +55,16 @@
             <th></th>
             <th>URL</th>
             <th>Parent</th>
-            <th>href</th>
+            <th>Failure</th>
         </tr>
         </thead>
         <tbody>
         {#each linkCheckResult as link}
         <tr>
             <th class="min-w-[6rem] max-w-[10rem] indicator"><span class={`indicator-item indicator-middle indicator-center badge ${stateClass(link.state)}`}>{link.state}</span></th>
-            <td>{link.validUrl}</td>
+            <td>{link.validUrl || link.url}</td>
             <td>{link.parent}</td>
-            <td>{link.url}</td>
+            <td>{link.failure || ""}</td>
         </tr>
         {/each}
         </tbody>

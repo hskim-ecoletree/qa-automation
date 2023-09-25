@@ -12,7 +12,7 @@ export async function findLinksPuppeteer(url: string[]) {
             .pipe(
                 expand(([result, ignoreList]) => {
                     return of(...result.next)
-                        .pipe(mergeMap((nextUrl) => from(checkLink(browser, nextUrl, result.parent, baseUrl, () => [...ignoreList, result.next.filter(n => n !== nextUrl)]))
+                        .pipe(mergeMap((nextUrl) => from(checkLink(browser, nextUrl, (result.parent || null), baseUrl, () => [...ignoreList, ...result.next.filter(n => n !== nextUrl)]))
                             .pipe(takeWhile(([r2,igs2]) => !isEmpty(r2.next)))))
                 }),
                 map(([result,igs]) => result),
@@ -25,7 +25,7 @@ export async function findLinksPuppeteer(url: string[]) {
     );
 }
 
-async function checkLink(browser: Browser, url: string, parentUrl: string, baseUrl: string, ignores: () => string[] = () => []): Promise<[Result, string[]]> {
+async function checkLink(browser: Browser, url: string, parentUrl: string | null, baseUrl: string, ignores: () => string[] = () => []): Promise<[Result, string[]]> {
     const page = await browser.newPage();
     const link = url.startsWith("http") ? url : `https://${url}`;
     try {
@@ -37,6 +37,7 @@ async function checkLink(browser: Browser, url: string, parentUrl: string, baseU
                 response: responseFrom(null),
                 parent: parentUrl,
                 failure: `Response was missing.`,
+                next: [],
             }, [url, link, ...ignores()]];
         } else {
             const state = getState(response);
@@ -46,18 +47,19 @@ async function checkLink(browser: Browser, url: string, parentUrl: string, baseU
                 response: responseFrom(response),
                 parent: parentUrl,
                 state: state,
+                next: [],
             };
 
             if (state === ResultState.ALIVE) {
-                const linkResults = await findAllLinks(page, baseUrl);
-                const nextLinks = linkResults.map(linkResult => {
+                const linkResults = await findAllLinks(page);
+                const nextLinks: PageLink[] = linkResults.map(linkResult => {
                     const url = trim(linkResult.url);
                     if (isEmpty(url)
                         || new RegExp("javascript:(.)*", "gi").test(url)
                     ) {
-                        return {...linkResult, skip: true};
+                        return {...linkResult, skip: true, parent: link} as PageLink;
                     } else {
-                        let validUrl;
+                        let validUrl: string;
                         if (url.startsWith("/")) {
                             validUrl = `${baseUrl}${url}`;
                         } else if (url.startsWith("./")) {
@@ -74,13 +76,13 @@ async function checkLink(browser: Browser, url: string, parentUrl: string, baseU
                             skip: isIgnorePattern,
                             validUrl: isIgnorePattern ? null : validUrl,
                             parent: link,
-                        }
+                        } as PageLink;
                     }
                 });
-                result.next = nextLinks?.filter(linkResult => linkResult.ltype === "a" && !linkResult.skip)?.map(linkResult => linkResult.validUrl) || [];
-                const pageLinks = await checkAliveLinks(page, nextLinks.filter(linkResult => linkResult.ltype !== "a" || linkResult.skip));
+                result.next = nextLinks.filter(linkResult => linkResult.ltype === "a" && !linkResult.skip).map(linkResult => linkResult.validUrl || linkResult.url || "");
+                const pageLinks = await checkAliveLinks(page, url, nextLinks.filter(linkResult => linkResult.ltype !== "a" || linkResult.skip));
                 result.pageResources = pageLinks;
-                const nextSkip = [url, link, ...pageLinks.map(pageResource => pageResource.url), ...ignores()];
+                const nextSkip = [url, link, ...pageLinks.map(pageResource => pageResource.url || ""), ...ignores()];
                 result.response = null;
                 result.request = null;
                 return [result, nextSkip];
@@ -99,23 +101,25 @@ async function checkLink(browser: Browser, url: string, parentUrl: string, baseU
             parent: parentUrl,
             state: ResultState.ERROR,
             failure: `Occurred an error while checking the link. ${err}`,
+            next: [],
         }, [url, link, ...ignores()]];
     } finally {
         await page.close();
     }
 }
 
-async function checkAliveLinks(page: Page, links: PageLink[]): Promise<Result[]> {
+async function checkAliveLinks(page: Page, parent: string | null, links: PageLink[]): Promise<Result[]> {
     const result = [];
     for (const link of links) {
-        if (link.skip) {
+        if (link.skip || isNil(link.validUrl)) {
             result.push({
                 url: link.url,
                 validUrl: link.validUrl,
                 request: null,
                 response: null,
-                parent: link.parent,
+                parent: parent,
                 state: ResultState.SKIPPED,
+                next: [],
             });
         } else {
             try {
@@ -129,8 +133,9 @@ async function checkAliveLinks(page: Page, links: PageLink[]): Promise<Result[]>
                         validUrl: link.validUrl,
                         request: null,
                         response: null,
-                        parent: link.parent,
+                        parent: parent,
                         state: ResultState.DEAD,
+                        next: [],
                     });
                 } else {
                     const state = getState(response);
@@ -140,8 +145,9 @@ async function checkAliveLinks(page: Page, links: PageLink[]): Promise<Result[]>
                         validUrl: link.validUrl,
                         request: isFailed ? requestFrom(response.request() || null) : null,
                         response: isFailed ? responseFrom(response) : null,
-                        parent: link.parent,
+                        parent: parent,
                         state: state,
+                        next: [],
                     });
                 }
             } catch (err) {
@@ -151,9 +157,10 @@ async function checkAliveLinks(page: Page, links: PageLink[]): Promise<Result[]>
                     validUrl: link.validUrl,
                     request: null,
                     response: null,
-                    parent: link.parent,
+                    parent: parent,
                     state: ResultState.ERROR,
                     failure: `Occurred an error while checking the link. ${err}`,
+                    next: [],
                 });
             }
         }
@@ -166,26 +173,26 @@ async function findAllLinks(page: Page): Promise<PageLink[]> {
     const imgSrcList = await page.$$eval("img[src]", (imgs) => imgs.map((img) => ({
         ltype: "img",
         url: img?.getAttribute('src')
-    })));
+    }))) as PageLink[];
 
     // link 태그의 href 속성 값 추출
     const linkHrefList = await page.$$eval("link[href]", (links) => links.map((link) => ({
         ltype: "link",
         url: link?.getAttribute('href')
-    })));
+    }))) as PageLink[];
 
     // script 태그의 src 속성 값 추출
     const scriptSrcList = await page.$$eval("script[src]", (scripts) => scripts.map((script) => ({
         ltype: "script",
         url: script?.getAttribute('src')
-    })));
+    }))) as PageLink[];
 
     // a 태그의 href 속성 값 추출
     const aHrefList = await page.$$eval("a[href]",(anchors) => anchors.map((a) => ({
         ltype: "a",
         url: a?.getAttribute('href'),
         text: a?.textContent
-    })));
+    }))) as PageLink[];
     return [...imgSrcList, ...linkHrefList, ...scriptSrcList, ...aHrefList];
 }
 
@@ -340,18 +347,18 @@ export enum ResultState {
 export interface Result {
     url?: string;
     state: ResultState;
-    request: Request;
-    response: Response;
-    parent?: string;
+    request: Request | null;
+    response: Response | null;
+    parent?: string | null;
     failure?: string;
     pageResources?: Result[];
-    next?: string[];
+    next: string[];
 }
-export type LinkType = 'a' | 'img' | 'script' | 'link';
 export interface PageLink {
-    ltype: LinkType;
+    ltype: 'a' | 'img' | 'script' | 'link';
     url?: string | undefined;
     text?: string;
     validUrl?: string;
     skip?: boolean;
+    parent?: string | null;
 }
