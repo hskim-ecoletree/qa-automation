@@ -53,14 +53,16 @@
         <thead>
         <tr>
             <th></th>
+            <th>State</th>
             <th>URL</th>
             <th>Parent</th>
             <th>Failure</th>
         </tr>
         </thead>
         <tbody>
-        {#each linkCheckResult as link}
+        {#each linkCheckResult as link, idx}
         <tr>
+            <th>{idx + 1}</th>
             <th class="min-w-[6rem] max-w-[10rem] indicator"><span class={`indicator-item indicator-middle indicator-center badge ${stateClass(link.state)}`}>{link.state}</span></th>
             <td>{link.validUrl || link.url}</td>
             <td>{link.parent}</td>
