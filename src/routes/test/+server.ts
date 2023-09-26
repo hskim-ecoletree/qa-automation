@@ -1,6 +1,7 @@
 import {get, isArray, isEmpty, isString, pickBy, split, trim} from "lodash-es";
 import {check, LinkState} from "linkinator";
 import {json} from "@sveltejs/kit";
+import {saveResult} from "$lib/server/db";
 
 export async function POST({request}) {
     const {url, ignores, recurse, concurrency} = await request.json();
@@ -14,13 +15,15 @@ export async function POST({request}) {
 
 async function analyze(path: string, recurse: boolean, concurrency: number = 100, ignores: string | string[] = ""): Promise<Result> {
     const ignorePatterns = isArray(ignores) ? ignores : split(ignores, ",").map(trim);
+    const startedAt = new Date();
     const result = await check({
         path,
         recurse,
-        concurrency,
+        concurrency: 100,
         linksToSkip: checkIgnore(ignorePatterns),
         timeout: 15_000,
     });
+    await saveResult(path, result, startedAt, new Date(), "test");
 
     return {
         passed: result.passed,
@@ -95,3 +98,7 @@ export interface LinkItem {
 //     ,"[SKU]"
 //     ,"/function/ipredirection/ipredirectionLocalList/"
 // ];
+
+/*
+
+ */

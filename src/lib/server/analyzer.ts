@@ -362,3 +362,16 @@ export interface PageLink {
     skip?: boolean;
     parent?: string | null;
 }
+
+/*
+docker run -d \
+--name neo4j \
+-p 7474:7474 -p 7687:7687 \
+-v $HOME/neo4j/data:/data \
+-v $HOME/neo4j/logs:/logs \
+-v $HOME/neo4j/plugins:/plugins \
+--env NEO4J_PLUGINS='["apoc", "graph-data-science", "streams", "n10s"]' \
+--env NEO4J_AUTH=neo4j/ecole#0450! \
+neo4j:5.12.0-bullseye
+
+ */

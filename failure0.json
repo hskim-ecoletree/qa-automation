@@ -1,0 +1,39 @@
+{
+  "url": "https://www.sgs.com/performance/",
+  "status": 0,
+  "state": "BROKEN",
+  "parent": "https://www.samsung.com/be/tablets/galaxy-tab-s/galaxy-tab-s9-ultra-wi-fi-graphite-256gb-sm-x910nzaaeub/",
+  "failureDetails": [
+    {
+      "message": "request to https://www.sgs.com/performance/ failed, reason: Parse Error: Invalid header value char",
+      "type": "system",
+      "errno": "HPE_INVALID_HEADER_TOKEN",
+      "code": "HPE_INVALID_HEADER_TOKEN",
+      "config": {
+        "method": "HEAD",
+        "url": "https://www.sgs.com/performance/",
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36"
+        },
+        "responseType": "stream",
+        "timeout": 15000
+      }
+    },
+    {
+      "message": "request to https://www.sgs.com/performance/ failed, reason: Parse Error: Invalid header value char",
+      "type": "system",
+      "errno": "HPE_INVALID_HEADER_TOKEN",
+      "code": "HPE_INVALID_HEADER_TOKEN",
+      "config": {
+        "method": "GET",
+        "url": "https://www.sgs.com/performance/",
+        "responseType": "stream",
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36"
+        },
+        "timeout": 15000
+      }
+    },
+    null
+  ]
+}
