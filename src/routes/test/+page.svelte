@@ -60,7 +60,12 @@
         loading = true;
         const res = await fetch(`/test`, {
                 method: 'POST',
-                body: JSON.stringify({url}),
+                body: JSON.stringify({
+                    url,
+                    concurrency: 1,
+                    ignores: ignorePatterns.split('\n').map(str => (str || "").trim()).filter(str => str.length > 0),
+                    recurse: isRecurse === true
+                }),
                 headers: {
                     'Content-Type': 'application/json'
                 }

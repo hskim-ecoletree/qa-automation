@@ -3,23 +3,23 @@ import {check, LinkState} from "linkinator";
 import {fail, json} from "@sveltejs/kit";
 
 export async function POST({request}) {
-    const {url, ignores} = await request.json();
+    const {url, ignores, recurse, concurrency} = await request.json();
     if (!isEmpty(url)) {
-        const result = await analyze(url, ignores);
+        const result = await analyze(url, recurse, concurrency, ignores);
         return json(result, {status: 200});
     }
     return fail(400, {errorMessage: "url is empty"});
 }
 
 
-async function analyze(url: string, ignores: string | string[] = ""): Promise<Result> {
+async function analyze(path: string, recurse: boolean, concurrency: number = 100, ignores: string | string[] = ""): Promise<Result> {
     const ignorePatterns = isArray(ignores) ? ignores : split(ignores, ",").map(trim);
     console.log("ignorePatterns", ignorePatterns);
     const result = await check({
-        path: url,
+        path,
+        recurse,
+        concurrency,
         linksToSkip: checkIgnore(defaultIgnorePatterns),
-        recurse: true,
-        concurrency: 10,
         timeout: 15_000,
     });
 
