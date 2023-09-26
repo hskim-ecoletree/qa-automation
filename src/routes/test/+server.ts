@@ -1,6 +1,6 @@
 import {get, isArray, isEmpty, isString, pickBy, split, trim} from "lodash-es";
 import {check, LinkState} from "linkinator";
-import {fail, json} from "@sveltejs/kit";
+import {json} from "@sveltejs/kit";
 
 export async function POST({request}) {
     const {url, ignores, recurse, concurrency} = await request.json();
@@ -8,7 +8,7 @@ export async function POST({request}) {
         const result = await analyze(url, recurse, concurrency, ignores);
         return json(result, {status: 200});
     }
-    return fail(400, {errorMessage: "url is empty"});
+    return json({errorMessage: "url is empty"}, {status: 400});
 }
 
 
