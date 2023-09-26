@@ -1,0 +1,6 @@
+POST http://localhost:5173/test
+Content-Type: application/json
+
+{
+    "url": "https://www.samsung.com/nl/"
+}
