@@ -36,7 +36,7 @@
         + "/global/\n"
         + "[SKU]\n"
         + "/function/ipredirection/ipredirectionLocalList/";
-    let isRecurse;
+    let isRecurse = true;
 
     function stateClass(state) {
         switch (state) {
@@ -62,9 +62,9 @@
                 method: 'POST',
                 body: JSON.stringify({
                     url,
-                    concurrency: 1,
+                    concurrency: 20,
                     ignores: ignorePatterns.split('\n').map(str => (str || "").trim()).filter(str => str.length > 0),
-                    recurse: isRecurse === true
+                    recurse: isRecurse
                 }),
                 headers: {
                     'Content-Type': 'application/json'
@@ -93,10 +93,8 @@
 <!--            </label>-->
     </div>
     <div class="form-control">
-        <div class="join">
-            <input class="join-item btn" type="radio" name="recurse" aria-label="Whole Site" checked bind:value={isRecurse}>
-            <input class="join-item btn" type="radio" name="recurse" aria-label="Single Page" bind:value={isRecurse}>
-        </div>
+        <label for="chkRecurse" class="label-text">Scan Whole Web site</label>
+        <input id="chkRecurse" class="checkbox checkbox-primary" type="checkbox" name="recurse" bind:checked={isRecurse}>
     </div>
     <div class="form-control">
         <textarea placeholder="Type ignore patterns" class="textarea textarea-bordered textarea-lg w-full max-w-xs" bind:value={ignorePatterns}></textarea>
