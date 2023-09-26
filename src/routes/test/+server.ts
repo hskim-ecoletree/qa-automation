@@ -14,12 +14,11 @@ export async function POST({request}) {
 
 async function analyze(path: string, recurse: boolean, concurrency: number = 100, ignores: string | string[] = ""): Promise<Result> {
     const ignorePatterns = isArray(ignores) ? ignores : split(ignores, ",").map(trim);
-    console.log("ignorePatterns", ignorePatterns);
     const result = await check({
         path,
         recurse,
         concurrency,
-        linksToSkip: checkIgnore(defaultIgnorePatterns),
+        linksToSkip: checkIgnore(ignorePatterns),
         timeout: 15_000,
     });
 
@@ -62,37 +61,37 @@ export interface LinkItem {
     failure?: string;
 }
 
-const defaultIgnorePatterns = [
-    "javascript:"
-    , "mailto:"
-    ,"{{"
-    ,".css"
-    ,".js"
-    ,".gif"
-    ,".png"
-    ,".jpg"
-    ,".jpeg"
-    ,".svg"
-    ,".webm"
-    ,".mpeg"
-    ,".wav"
-    ,".mp4"
-    ,"PNG$"
-    ,".ttf"
-    ,".woff"
-    ,".eot"
-    ,".cur"
-    ,".otf"
-    ,".ico"
-    ,"/search/"
-    ,"/support/"
-    ,"/multistore/"
-    ,"https://account.samsung.com/"
-    ,"http://csr.samsung.com/en/main.do"
-    ,"http://csr.samsung.com/"
-    ,"signInGate"
-    ,"signOutGate"
-    ,"/global/"
-    ,"[SKU]"
-    ,"/function/ipredirection/ipredirectionLocalList/"
-];
+// const defaultIgnorePatterns = [
+//     "javascript:"
+//     , "mailto:"
+//     ,"{{"
+//     ,".css"
+//     ,".js"
+//     ,".gif"
+//     ,".png"
+//     ,".jpg"
+//     ,".jpeg"
+//     ,".svg"
+//     ,".webm"
+//     ,".mpeg"
+//     ,".wav"
+//     ,".mp4"
+//     ,"PNG$"
+//     ,".ttf"
+//     ,".woff"
+//     ,".eot"
+//     ,".cur"
+//     ,".otf"
+//     ,".ico"
+//     ,"/search/"
+//     ,"/support/"
+//     ,"/multistore/"
+//     ,"https://account.samsung.com/"
+//     ,"http://csr.samsung.com/en/main.do"
+//     ,"http://csr.samsung.com/"
+//     ,"signInGate"
+//     ,"signOutGate"
+//     ,"/global/"
+//     ,"[SKU]"
+//     ,"/function/ipredirection/ipredirectionLocalList/"
+// ];
