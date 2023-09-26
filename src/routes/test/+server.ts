@@ -14,11 +14,12 @@ export async function POST({request}) {
 
 async function analyze(url: string, ignores: string | string[] = ""): Promise<Result> {
     const ignorePatterns = isArray(ignores) ? ignores : split(ignores, ",").map(trim);
+    console.log("ignorePatterns", ignorePatterns);
     const result = await check({
         path: url,
-        linksToSkip: checkIgnore([...defaultIgnorePatterns, ...ignorePatterns]),
+        linksToSkip: checkIgnore(defaultIgnorePatterns),
         recurse: true,
-        concurrency: 1,
+        concurrency: 10,
         timeout: 15_000,
     });
 
@@ -66,16 +67,16 @@ const defaultIgnorePatterns = [
     , "mailto:"
     ,"{{"
     ,".css"
-    // ,".js"
-    // ,".gif"
-    // ,".png"
-    // ,".jpg"
-    // ,".jpeg"
-    // ,".svg"
-    // ,".webm"
-    // ,".mpeg"
-    // ,".wav"
-    // ,".mp4"
+    ,".js"
+    ,".gif"
+    ,".png"
+    ,".jpg"
+    ,".jpeg"
+    ,".svg"
+    ,".webm"
+    ,".mpeg"
+    ,".wav"
+    ,".mp4"
     ,"PNG$"
     ,".ttf"
     ,".woff"

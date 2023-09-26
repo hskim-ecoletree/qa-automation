@@ -1,7 +1,42 @@
 <script lang="ts">
     // export let data;
+    let loading = false;
     let linkCheckResult = [];
+
     let url;
+    let ignorePatterns = "javascript:\n"
+        +  "mailto:\n"
+        + "{{\n"
+        + ".css\n"
+        + ".js\n"
+        + ".gif\n"
+        + ".png\n"
+        + ".jpg\n"
+        + ".jpeg\n"
+        + ".svg\n"
+        + ".webm\n"
+        + ".mpeg\n"
+        + ".wav\n"
+        + ".mp4\n"
+        + "PNG$\n"
+        + ".ttf\n"
+        + ".woff\n"
+        + ".eot\n"
+        + ".cur\n"
+        + ".otf\n"
+        + ".ico\n"
+        + "/search/\n"
+        + "/support/\n"
+        + "/multistore/\n"
+        + "https://account.samsung.com/\n"
+        + "http://csr.samsung.com/en/main.do\n"
+        + "http://csr.samsung.com/\n"
+        + "signInGate\n"
+        + "signOutGate\n"
+        + "/global/\n"
+        + "[SKU]\n"
+        + "/function/ipredirection/ipredirectionLocalList/";
+    let isRecurse;
 
     function stateClass(state) {
         switch (state) {
@@ -22,6 +57,7 @@
     }
 
     async function fetchAnalyzeResult() {
+        loading = true;
         const res = await fetch(`/test`, {
                 method: 'POST',
                 body: JSON.stringify({url}),
@@ -30,13 +66,12 @@
                 }
             });
         const json = await res.json();
-        linkCheckResult = json.items;
+        linkCheckResult = json.items || [];
+        loading = false;
     }
 
     function enterKeydown(event) {
-        debugger
         if (event.key === 'Enter') {
-            debugger
             fetchAnalyzeResult();
         }
     }
@@ -45,20 +80,38 @@
 </script>
 
 
-<div>
-    <h1>Test Homepage</h1>
-    <form method="POST">
-        <fieldset>
-            <label>
-                Homepage URL:
-                <input name="url" type="text" class="w-96" maxlength="255" bind:value={url} on:keydown={enterKeydown} on:keypress={enterKeydown}  on:keyup={enterKeydown}>
-            </label>
-        </fieldset>
-    </form>
+<form class="space-y-4 w-800">
+    <div class="form-control">
+<!--            <label class="label">-->
+            <label for="iptUrl" class="label-text">Web site URL</label>
+            <input id="iptUrl" name="url" type="text" placeholder="Type your web site URL" class="input input-bordered input-primary resize max-w-xs" maxlength="255" bind:value={url} on:keydown={enterKeydown} on:keypress={enterKeydown} on:keyup={enterKeydown}>
+<!--            </label>-->
+    </div>
+    <div class="form-control">
+        <div class="join">
+            <input class="join-item btn" type="radio" name="recurse" aria-label="Whole Site" checked bind:value={isRecurse}>
+            <input class="join-item btn" type="radio" name="recurse" aria-label="Single Page" bind:value={isRecurse}>
+        </div>
+    </div>
+    <div class="form-control">
+        <textarea placeholder="Type ignore patterns" class="textarea textarea-bordered textarea-lg w-full max-w-xs" bind:value={ignorePatterns}></textarea>
+    </div>
+    {#if (!loading)}
     <button class="btn btn-primary" type="button" on:click={fetchAnalyzeResult}>Analysis</button>
-</div>
-
+    {/if}
+</form>
+{#if (loading)}
+<span class="loading loading-dots loading-lg text-primary"></span>
+{/if}
 <div class="overflow-x-auto">
+    <div>
+        <div>
+            <p> Total: {linkCheckResult.length || 0}</p>
+            <p> Alive: {linkCheckResult.filter(l => l.state === 'alive').length || 0}</p>
+            <p> Dead: {linkCheckResult.filter(l => l.state === 'dead').length || 0}</p>
+            <p> Skipped: {linkCheckResult.filter(l => l.state === 'skipped').length || 0}</p>
+        </div>
+    </div>
     <table class="table">
         <!-- head -->
         <thead>
