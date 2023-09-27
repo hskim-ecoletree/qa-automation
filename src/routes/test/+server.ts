@@ -19,11 +19,11 @@ async function analyze(path: string, recurse: boolean, concurrency: number = 100
     const result = await check({
         path,
         recurse,
-        concurrency: 100,
+        concurrency: 3,
         linksToSkip: checkIgnore(ignorePatterns),
         timeout: 15_000,
     });
-    await saveResult(path, result, startedAt, new Date(), "test");
+    // await saveResult(path, result, startedAt, new Date(), (`${path}-${startedAt.toISOString()}`).replaceAll("-", "_"));
 
     return {
         passed: result.passed,
