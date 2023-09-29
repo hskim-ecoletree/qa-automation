@@ -19,7 +19,7 @@ async function analyze(path: string, recurse: boolean, concurrency: number = 100
     const result = await check({
         path,
         recurse,
-        concurrency: 3,
+        concurrency,
         linksToSkip: checkIgnore(ignorePatterns),
         timeout: 15_000,
     });
