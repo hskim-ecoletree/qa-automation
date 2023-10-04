@@ -48,22 +48,6 @@ export async function analyze(rootUrl: string, ignoreOptions: string | string[])
                 }),
                 toArray(),
             ));
-    // const results = await check({
-    //         linksToSkip: ignore,
-    //         recurse: false,
-    //         concurrency: 500,
-    //         path: rootUrl,
-    //         timeout: 15_000,
-    //     });
-    // return {
-    //     success: results.passed,
-    //     data: map(results.links || [],(link) => ({
-    //         url: link.url,
-    //         state: toState(link.state),
-    //         parent: link.parent,
-    //         failure: toFailureMessage((link.failureDetails || []).filter(failure => !isEmpty(failure))[0] || {}),
-    //     }))
-    // };
 }
 
 function toState(state: LinkState): string {

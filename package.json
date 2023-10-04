@@ -12,7 +12,8 @@
     "lint": "prettier --plugin-search-dir . --check . && eslint .",
     "format": "prettier --plugin-search-dir . --write .",
     "test:integration": "playwright test",
-    "test:unit": "vitest"
+    "test:unit": "vitest",
+    "migration": "drizzle-kit push:sqlite"
   },
   "devDependencies": {
     "@playwright/test": "^1.28.1",
@@ -24,6 +25,7 @@
     "autoprefixer": "^10.4.15",
     "bun-types": "^1.0.2",
     "daisyui": "latest",
+    "drizzle-kit": "^0.19.13",
     "eslint": "^8.28.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-svelte": "^2.30.0",
@@ -42,9 +44,14 @@
   "type": "module",
   "dependencies": {
     "@types/lodash-es": "^4.17.9",
+    "axios": "^1.5.1",
+    "better-sqlite3": "^8.6.0",
+    "drizzle-orm": "^0.28.6",
     "linkinator": "^5.0.2",
     "lodash-es": "^4.17.21",
+    "moment": "^2.29.4",
     "puppeteer": "^21.3.4",
+    "random": "^4.1.0",
     "rxjs": "^7.8.1"
   }
 }

@@ -12,6 +12,9 @@ npm create svelte@latest
 
 # create a new project in my-app
 npm create svelte@latest my-app
+
+# Create Sqlite database as file named 'linkinator.db'
+npm run migration
 ```
 
 ## Developing
